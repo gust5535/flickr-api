@@ -16,4 +16,13 @@
 //	return View::make('hello');
 //});
 
-Route::get('/', 'FlickrController@index');
+//Route::get('/', 'FlickrController@index');
+//dashboard
+Route::match(array('GET', 'POST'), '/', array('as' => 'home', 'uses' => 'FlickrController@index'));
+
+Route::get('/exchangeToken', array('as' => 'exchangeToken', 'uses' => 'FlickrController@exchangeToken'));
+
+Route::get('/clearSession', 'FlickrController@destroy');
+
+Route::get('/error', 'FlickrController@showError');
+

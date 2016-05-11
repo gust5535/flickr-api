@@ -1,141 +1,81 @@
 <?php
+/** 
+ * Main controller to work with Flickr API
+ * 
+ * @author Andriy Leshchuk <andriy.leshchuk@gmail.com>
+ */
 
 class FlickrController extends \BaseController {
 	
+	/**
+     * @var available methods to use
+     */
 	public $testMethods = array(
+		'- Please select a method here -',
 		'flickr.test.echo',
 		'flickr.test.login',
 		'flickr.test.null',
 		'flickr.urls.lookupUser',
 		'flickr.panda.getPhotos',
 	);
+	
 	/**
-	 * Display a listing of the resource.
+	 * Action is used for a callback point.
+	 * Perform a third step of oAuth: Exchange the Request Token for an Access Token
+	 * 
+	 * @return redirect to main page
+	 */
+	public function exchangeToken()
+	{
+		$api = FlickrApi::getInstance();
+		//do third step: Exchange the Request Token for an Access Token
+		return $api->requestAccessToken();
+	}
+	
+	/**
+	 * Display main dashboard.
 	 *
 	 * @return Response
 	 */
 	public function index()
 	{
-		$sResult = '';
-		$testUri = 'flickr.test.login';
-		$api = new FlickrApi();
+		$api = FlickrApi::getInstance();
+		//get passed parameters
+		$input = Input::all();
+//		dd($input);
+		$params = array(
+			'method' => (isset($input['method']) && !empty($this->testMethods[$input['method']])) ? $this->testMethods[$input['method']] : 'flickr.test.echo',
+			'format' => isset($input['response-format']) ? $input['response-format'] : 'rest' 
+		);
+		//TODO: handle custom parameters(+ methods)
+//		$sResult = $api->requestMethod('flickr.panda.getPhotos', 
+//											array('panda_name' => 'ling ling')
+//										);
 		
-		$oauth_token = Input::get('oauth_token', '');
-		$oauth_verifier = Input::get('oauth_verifier', '');
+		$sResult = $api->requestMethod($params);
 		
-		if (!$oauth_token || !$oauth_verifier) {
-			Session::forget('accessTokenData');
-			
-			$rt = $api->requestToken();
-			if ($rt['oauth_callback_confirmed']) {
-				//Getting the User Authorization
-				$api->storeTokenSecret($rt['oauth_token_secret']);
-				/* Redirect browser */
-				//go to https://www.flickr.com/services/oauth/authorize?oauth_token=72157626737672178-022bbd2f4c2f3432
-				header("Location: ".$api->getAuthorizationEndpoint().'?oauth_token='.$rt['oauth_token']);
-				//after redirects user endups at oauth_callback page.
-				// e.g. http://oauth_callback page/?oauth_token=72157626737672178-022bbd2f4c2f3432&oauth_verifier=5d1b96a26b494074
-				exit();
-			}
-		} else {
-			//get  Access Token
-			if (Session::has('accessTokenData')) {
-				$accessTokenData = Session::get('accessTokenData');
-				# call a method
-//				$testUri = $api->requestMethod('flickr.test.login', $accessTokenData['oauth_token'], $accessTokenData['oauth_token_secret'], array('foo' => 'BAR'));
-//				$testUri = $api->requestMethod('flickr.urls.lookupUser', 
-//												$accessTokenData['oauth_token'], 
-//												$accessTokenData['oauth_token_secret'], 
-//												array('url' => 'https://www.flickr.com/photos/paxx/')
-//						);
-				
-				
-				$sResult = $api->requestMethod('flickr.panda.getPhotos', 
-											$accessTokenData['oauth_token'], 
-											$accessTokenData['oauth_token_secret'], 
-											array('panda_name' => 'ling ling')
-					);
-				
-				//$sResult = $api->testResponse($testUri);
-			} else {
-				$accessTokenData = $api->requestAccessToken($oauth_token, $oauth_verifier);
-				Session::put('accessTokenData', $accessTokenData);
-			}
-
-		}
-		
-		return View::make('flickr', array('testMethods' => $this->testMethods, 'sResult' => $sResult));
+		return View::make('index', array('testMethods' => $this->testMethods, 'sResult' => $sResult));
+	}
+	
+	/**
+	 * Custom action to show errors if any
+	 * @return render view
+	 */
+	public function showError()
+	{
+		$message = '';
+		return View::make('error', array('message' => $message));
 	}
 
 
 	/**
-	 * Show the form for creating a new resource.
-	 *
-	 * @return Response
+	 * Destroy Session data and redirect to home page.
+	 * 
+	 * @return redirect to the API entrance point
 	 */
-	public function create()
+	public function destroy()
 	{
-		//
+		Session::flush();
+		return Redirect::to('/');
 	}
-
-
-	/**
-	 * Store a newly created resource in storage.
-	 *
-	 * @return Response
-	 */
-	public function store()
-	{
-		//
-	}
-
-
-	/**
-	 * Display the specified resource.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function show($id)
-	{
-		//
-	}
-
-
-	/**
-	 * Show the form for editing the specified resource.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function edit($id)
-	{
-		//
-	}
-
-
-	/**
-	 * Update the specified resource in storage.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function update($id)
-	{
-		//
-	}
-
-
-	/**
-	 * Remove the specified resource from storage.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function destroy($id)
-	{
-		//
-	}
-
-
 }
