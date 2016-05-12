@@ -2,6 +2,12 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/C:/web/wamp/www/test-laravel.local/app/controllers/FlickrController.php</file>
+            <file>file:/C:/web/wamp/www/test-laravel.local/app/models/FlickrApi.php</file>
+            <file>file:/C:/web/wamp/www/test-laravel.local/app/views/index.blade.php</file>
+            <file>file:/C:/web/wamp/www/test-laravel.local/public/js/main.js</file>
+            <file>file:/C:/web/wamp/www/test-laravel.local/public/css/main.css</file>
+        </group>
     </open-files>
 </project-private>

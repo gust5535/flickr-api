@@ -45,6 +45,90 @@ class FlickrApi
 			'method_endpoint'		 => 'https://api.flickr.com/services/rest'
 		);
 	
+	/**
+     * @var available API methods to use
+     */
+	protected $_apiMethods = array(
+		'flickr.test.echo' => array(
+			'required'  => array(),
+			'optional'  => array(),
+			'doc_url'	=> 'https://www.flickr.com/services/api/flickr.test.echo.htm',
+			'short_info' => "A testing method which echo's all parameters back in the response."
+		),
+		'flickr.test.login' => array(
+			'required'  => array(),
+			'optional'  => array(),
+			'doc_url'	=> 'https://www.flickr.com/services/api/flickr.test.login.htm',
+			'short_info' => "A testing method which checks if the caller is logged in then returns their username."
+		),
+		'flickr.test.null' => array(
+			'required'  => array(),
+			'optional'  => array(),
+			'doc_url'	=> 'https://www.flickr.com/services/api/flickr.test.null.htm',
+			'short_info' => "Null test"
+		),
+		'flickr.photosets.getPhotos' => array(
+			'required'  => array('photoset_id', 'user_id'),
+			'optional'  => array('extras', 'per_page', 'page', 'privacy_filter', 'media'),
+			'doc_url'	=> 'https://www.flickr.com/services/api/flickr.photosets.getPhotos.htm',
+			'short_info' => "Get the list of photos in a set."
+		),
+		'flickr.people.getPublicPhotos' => array(
+			'required'  => array('user_id'),
+			'optional'  => array('safe_search', 'extras', 'per_page', 'page'),
+			'doc_url'	=> 'https://www.flickr.com/services/api/flickr.people.getPublicPhotos.htm',
+			'short_info' => "Get a list of public photos for the given user."
+		),
+		'flickr.panda.getList' => array(
+			'required'  => array(),
+			'optional'  => array(),
+			'doc_url'	=> 'https://www.flickr.com/services/api/flickr.panda.getList.html',
+			'short_info' => "Return a list of Flickr pandas, from whom you can request photos using the flickr.panda.getPhotos API method."
+		),
+		'flickr.panda.getPhotos' => array(
+			'required'  => array('panda_name'),
+			'optional'  => array('extras', 'per_page', 'page'),
+			'doc_url'	=> 'https://www.flickr.com/services/api/flickr.panda.getPhotos.html',
+			'short_info' => "Ask the Flickr Pandas for a list of recent public (and 'safe') photos."
+		),
+	);
+	
+	/**
+     * Return available method names
+     *
+	 * @param string $withEmptyValue if passed will be added in the beginning. Use it for building dropdown.
+     * @return array
+     */
+	public function getMethodsNames($withEmptyValue = false)
+	{
+		$methodsList = array_keys($this->_apiMethods);
+		if ($withEmptyValue) {
+			$methodsList = array_merge(array($withEmptyValue), $methodsList);
+		}
+		return $methodsList;
+	}
+	/**
+     * Return all available methods, including details.
+     *
+     * @return array
+     */
+	public function getMethods()
+	{
+		return $this->_apiMethods;
+	}
+	/**
+     * Return selected method's details
+     *
+	 * @param string $methodName
+     * @return array
+     */
+	public function getMethodDetails($methodName)
+	{
+		if (!empty($this->_apiMethods[$methodName])) {
+			return $this->_apiMethods[$methodName];
+		}
+		return array();
+	}
     /**
      * Returns the *Singleton* instance of this class.
      *
@@ -289,8 +373,7 @@ class FlickrApi
 	 */
 	public function storeTokenSecret($tokenSecret)
 	{
-		//TODO: hide file from public access
-		$bytes_written = File::put('flickr_token_secret.tmp', $tokenSecret);
+		$bytes_written = File::put(storage_path().DIRECTORY_SEPARATOR.'flickr_token_secret.tmp', $tokenSecret);
 		if ($bytes_written === false)
 		{
 			die("Error writing to file");
@@ -304,13 +387,10 @@ class FlickrApi
 	 */
 	private function _getTokenSecret()
 	{
-		$pathToFile = 'flickr_token_secret.tmp';
+		$pathToFile = storage_path().DIRECTORY_SEPARATOR.'flickr_token_secret.tmp';
 		if (File::exists($pathToFile)) {
 			return File::get($pathToFile);
 		}
 		return '';
 	}
-	
-	public function getErrorCode(){}
-	public function getErrorMessage(){}
 }

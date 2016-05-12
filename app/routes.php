@@ -11,16 +11,12 @@
 |
 */
 
-//Route::get('/', function()
-//{
-//	return View::make('hello');
-//});
-
-//Route::get('/', 'FlickrController@index');
 //dashboard
 Route::match(array('GET', 'POST'), '/', array('as' => 'home', 'uses' => 'FlickrController@index'));
 
 Route::get('/exchangeToken', array('as' => 'exchangeToken', 'uses' => 'FlickrController@exchangeToken'));
+
+Route::get('/getMethodDetails', 'FlickrController@getAjaxMethodDetails');
 
 Route::get('/clearSession', 'FlickrController@destroy');
 

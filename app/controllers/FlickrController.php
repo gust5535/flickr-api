@@ -6,18 +6,57 @@
  */
 
 class FlickrController extends \BaseController {
+
+	/**
+	 * Display main dashboard.
+	 *
+	 * @return Response
+	 */
+	public function index()
+	{
+		$api = FlickrApi::getInstance();
+		$testMethods = $api->getMethodsNames('- Please select a method here -');
+		//get passed parameters
+		$input = Input::all();
+		$apiMethodId = Input::get('method');
+		$params = array(
+			'method' => !empty($testMethods[$apiMethodId]) ? $testMethods[$apiMethodId] : 'flickr.test.echo',
+			'format' => isset($input['response_format']) ? $input['response_format'] : 'rest' 
+		);
+		if (!empty($input['additional_parameters'])) {
+			$additionalParams = array();
+			parse_str($input['additional_parameters'], $additionalParams);
+			$params = array_merge($params, $additionalParams);
+		}
+		//do request data by a Method.
+		$sResult = $api->requestMethod($params);
+		
+		return View::make('index', array('testMethods' => $testMethods, 'sResult' => $sResult));
+	}
 	
 	/**
-     * @var available methods to use
-     */
-	public $testMethods = array(
-		'- Please select a method here -',
-		'flickr.test.echo',
-		'flickr.test.login',
-		'flickr.test.null',
-		'flickr.urls.lookupUser',
-		'flickr.panda.getPhotos',
-	);
+	 * Get description and details for the method by AJAX request.
+	 * Use POST method_name parameter to specify Method.
+	 * 
+	 * @return string JSON represntation
+	 */
+	public function getAjaxMethodDetails()
+	{
+		$returnData = array(
+			'success' => false,
+			'msg' => 'Unauthorized attempt to access method.'
+		);
+		if (Request::ajax()) {
+			$methodName = Input::get('method_name');
+			$api = FlickrApi::getInstance();
+			$returnData = array(
+				'success' => true,
+				'data' => $api->getMethodDetails($methodName)
+			);
+		}
+		
+		return Response::json( $returnData );
+	}
 	
 	/**
 	 * Action is used for a callback point.
@@ -30,31 +69,6 @@ class FlickrController extends \BaseController {
 		$api = FlickrApi::getInstance();
 		//do third step: Exchange the Request Token for an Access Token
 		return $api->requestAccessToken();
-	}
-	
-	/**
-	 * Display main dashboard.
-	 *
-	 * @return Response
-	 */
-	public function index()
-	{
-		$api = FlickrApi::getInstance();
-		//get passed parameters
-		$input = Input::all();
-//		dd($input);
-		$params = array(
-			'method' => (isset($input['method']) && !empty($this->testMethods[$input['method']])) ? $this->testMethods[$input['method']] : 'flickr.test.echo',
-			'format' => isset($input['response-format']) ? $input['response-format'] : 'rest' 
-		);
-		//TODO: handle custom parameters(+ methods)
-//		$sResult = $api->requestMethod('flickr.panda.getPhotos', 
-//											array('panda_name' => 'ling ling')
-//										);
-		
-		$sResult = $api->requestMethod($params);
-		
-		return View::make('index', array('testMethods' => $this->testMethods, 'sResult' => $sResult));
 	}
 	
 	/**
